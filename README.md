@@ -291,7 +291,7 @@ This enables comparison between traditional cloud deployments and edge-assisted 
 
 **Abhik Dey**
 
-B.Tech Project: Cloud-Based Web Services through Edge-Cloud Collaboration
+M.Tech Thesis: Cloud-Based Web Services through Edge-Cloud Collaboration
 
 ---
 
