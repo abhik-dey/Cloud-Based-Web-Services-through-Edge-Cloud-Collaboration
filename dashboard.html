@@ -1,0 +1,1549 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cloud Airline System — Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg: #090e1a;
+      --surface: #111827;
+      --surface2: #1a2235;
+      --border: #1e2d45;
+      --accent: #3b82f6;
+      --accent2: #6366f1;
+      --green: #22c55e;
+      --red: #ef4444;
+      --yellow: #f59e0b;
+      --text: #e2e8f0;
+      --muted: #64748b;
+      --radius: 14px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 32px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .logo-text {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.4px;
+    }
+
+    .logo-sub {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 1px;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .live-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(34, 197, 94, 0.12);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--green);
+    }
+
+    .live-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.3;
+      }
+    }
+
+    .refresh-btn {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: background .2s;
+    }
+
+    .refresh-btn:hover {
+      background: var(--border);
+    }
+
+    /* ── Layout ── */
+    main {
+      padding: 28px 32px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    /* ── Service Status Cards ── */
+    .section-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 14px;
+    }
+
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+
+    .service-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+      transition: border-color .3s, transform .2s;
+    }
+
+    .service-card:hover {
+      transform: translateY(-2px);
+      border-color: #2a3a55;
+    }
+
+    .service-card.online {
+      border-left: 3px solid var(--green);
+    }
+
+    .service-card.offline {
+      border-left: 3px solid var(--red);
+    }
+
+    .service-card.loading {
+      border-left: 3px solid var(--yellow);
+    }
+
+    .svc-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .svc-name {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .svc-port {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .svc-status {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 99px;
+    }
+
+    .svc-status.online {
+      background: rgba(34, 197, 94, .15);
+      color: var(--green);
+    }
+
+    .svc-status.offline {
+      background: rgba(239, 68, 68, .15);
+      color: var(--red);
+    }
+
+    .svc-status.loading {
+      background: rgba(245, 158, 11, .15);
+      color: var(--yellow);
+    }
+
+    .svc-latency {
+      font-size: 22px;
+      font-weight: 700;
+      margin-top: 14px;
+    }
+
+    .svc-latency-label {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    /* ── Main Content ── */
+    .content-grid {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 20px;
+    }
+
+    /* ── Booking Panel ── */
+    .booking-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+    }
+
+    .panel-title {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 20px;
+    }
+
+    /* ── Seat Gauge ── */
+    .seat-gauge-wrap {
+      margin-bottom: 24px;
+    }
+
+    .seat-numbers {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 8px;
+    }
+
+    .seat-count {
+      font-size: 42px;
+      font-weight: 800;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .seat-total {
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .gauge-bar {
+      height: 8px;
+      border-radius: 99px;
+      background: var(--surface2);
+      overflow: hidden;
+    }
+
+    .gauge-fill {
+      height: 100%;
+      border-radius: 99px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      transition: width 0.7s cubic-bezier(.4, 0, .2, 1);
+    }
+
+    .gauge-labels {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 6px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    /* ── Book Button ── */
+    .book-btn {
+      width: 100%;
+      padding: 14px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      transition: opacity .2s, transform .15s;
+      box-shadow: 0 4px 20px rgba(59, 130, 246, .3);
+    }
+
+    .book-btn:hover:not(:disabled) {
+      opacity: .9;
+      transform: translateY(-1px);
+    }
+
+    .book-btn:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+    }
+
+    .last-result {
+      margin-top: 14px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      font-size: 13px;
+      display: none;
+    }
+
+    .last-result.show {
+      display: block;
+    }
+
+    .result-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 4px;
+    }
+
+    .result-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .result-label {
+      color: var(--muted);
+    }
+
+    .result-value.success {
+      color: var(--green);
+      font-weight: 600;
+    }
+
+    .result-value.error {
+      color: var(--red);
+      font-weight: 600;
+    }
+
+    /* ── Stats Cards ── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .stat-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+    }
+
+    .stat-value {
+      font-size: 26px;
+      font-weight: 700;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    /* ── Activity Feed ── */
+    .activity-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .activity-list {
+      flex: 1;
+      overflow-y: auto;
+      max-height: 520px;
+    }
+
+    .activity-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+      animation: slideIn .3s ease;
+    }
+
+    .activity-item:last-child {
+      border-bottom: none;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .activity-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-top: 5px;
+      flex-shrink: 0;
+    }
+
+    .activity-dot.success {
+      background: var(--green);
+    }
+
+    .activity-dot.error {
+      background: var(--red);
+    }
+
+    .activity-dot.info {
+      background: var(--accent);
+    }
+
+    .activity-msg {
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .activity-time {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .empty-state {
+      color: var(--muted);
+      font-size: 13px;
+      text-align: center;
+      padding: 40px 0;
+    }
+
+    /* ── Latency chart ── */
+    .chart-section {
+      margin-top: 20px;
+    }
+
+    canvas#latencyChart {
+      width: 100% !important;
+      max-height: 120px;
+      border-radius: 8px;
+      background: var(--surface2);
+      padding: 8px;
+    }
+
+    /* ── Management Panel ── */
+    .mgmt-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+
+    .mgmt-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+    }
+
+    .ctrl-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .ctrl-row:last-child {
+      border-bottom: none;
+    }
+
+    .ctrl-name {
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .ctrl-btns {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-sm {
+      padding: 4px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: var(--surface2);
+      color: var(--text);
+    }
+
+    .btn-sm:hover {
+      background: var(--border);
+    }
+
+    .btn-sm.start:hover {
+      border-color: var(--green);
+      color: var(--green);
+    }
+
+    .btn-sm.stop:hover {
+      border-color: var(--red);
+      color: var(--red);
+    }
+
+    .btn-sm.restart:hover {
+      border-color: var(--yellow);
+      color: var(--yellow);
+    }
+
+    /* ── Load Test Panel ── */
+    .lt-inputs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .lt-field label {
+      display: block;
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .lt-field input {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 8px;
+      border-radius: 6px;
+      font-size: 13px;
+    }
+
+    /* ── Terminal ── */
+    .terminal-container {
+      margin-top: 20px;
+      background: #000;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .term-header {
+      background: #111;
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .term-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    .term-tabs {
+      display: flex;
+      gap: 8px;
+    }
+
+    .term-tab {
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      color: var(--muted);
+      background: transparent;
+      border: none;
+    }
+
+    .term-tab.active {
+      color: #fff;
+      background: var(--surface2);
+    }
+
+    .term-body {
+      height: 250px;
+      padding: 12px;
+      font-family: 'Monaco', 'Consolas', monospace;
+      font-size: 12px;
+      line-height: 1.4;
+      color: #a1a1aa;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    .term-line {
+      margin-bottom: 2px;
+    }
+
+    .term-line.info {
+      color: var(--accent);
+    }
+
+    .term-line.error {
+      color: var(--red);
+    }
+
+    @media (max-width: 1100px) {
+      .services-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .mgmt-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .content-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 600px) {
+      main {
+        padding: 16px;
+      }
+
+      header {
+        padding: 14px 16px;
+      }
+
+      .services-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <div class="logo">
+      <div class="logo-icon">✈️</div>
+      <div>
+        <div class="logo-text">CloudAir System</div>
+        <div class="logo-sub">Microservices Dashboard</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="live-badge">
+        <div class="live-dot"></div> Live
+      </div>
+      <button class="refresh-btn" onclick="refreshAll()">⟳ Refresh</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- SERVICE STATUS -->
+    <div class="section-title">Service Health</div>
+    <div class="services-grid">
+      <div class="service-card loading" id="card-gateway">
+        <div class="svc-header">
+          <div>
+            <div class="svc-name">API Gateway</div>
+            <div class="svc-port">localhost:8001</div>
+          </div>
+          <span class="svc-status loading" id="status-gateway">Checking…</span>
+        </div>
+        <div class="svc-latency" id="latency-gateway">—</div>
+        <div class="svc-latency-label">Response time</div>
+      </div>
+      <div class="service-card loading" id="card-booking">
+        <div class="svc-header">
+          <div>
+            <div class="svc-name">Booking Service</div>
+            <div class="svc-port">localhost:8002</div>
+          </div>
+          <span class="svc-status loading" id="status-booking">Checking…</span>
+        </div>
+        <div class="svc-latency" id="latency-booking">—</div>
+        <div class="svc-latency-label">Response time</div>
+      </div>
+      <div class="service-card loading" id="card-inventory">
+        <div class="svc-header">
+          <div>
+            <div class="svc-name">Inventory Service</div>
+            <div class="svc-port">localhost:8003</div>
+          </div>
+          <span class="svc-status loading" id="status-inventory">Checking…</span>
+        </div>
+        <div class="svc-latency" id="latency-inventory">—</div>
+        <div class="svc-latency-label">Response time</div>
+      </div>
+      <div class="service-card loading" id="card-payment">
+        <div class="svc-header">
+          <div>
+            <div class="svc-name">Payment Service</div>
+            <div class="svc-port">localhost:8004</div>
+          </div>
+          <span class="svc-status loading" id="status-payment">Checking…</span>
+        </div>
+        <div class="svc-latency" id="latency-payment">—</div>
+        <div class="svc-latency-label">Response time</div>
+      </div>
+    </div>
+
+    <!-- MANAGEMENT SECTION -->
+    <div class="mgmt-grid">
+      <div>
+        <div class="section-title">System Management</div>
+        <div class="mgmt-card">
+          <div class="ctrl-row"
+            style="background: var(--surface2); padding: 12px; border-radius: 8px; margin-bottom: 15px; border: 1px solid var(--border);">
+            <div>
+              <span class="ctrl-name" style="font-size: 14px; font-weight: 700;">Simulation Architecture</span>
+              <div style="font-size: 11px; color: var(--muted); margin-top: 2px;">Toggle Cloud (200ms delay) vs Edge
+                (0ms delay)</div>
+            </div>
+            <div class="ctrl-btns">
+              <button class="btn-sm start" id="btn-cloud-mode" onclick="setSimulationMode(true)"
+                style="background: var(--green); color: black;">Cloud</button>
+              <button class="btn-sm" id="btn-edge-mode" onclick="setSimulationMode(false)">Edge</button>
+            </div>
+          </div>
+          <div class="ctrl-row">
+            <span class="ctrl-name">API Gateway</span>
+            <div class="ctrl-btns">
+              <button class="btn-sm start" onclick="ctrlService('api-gateway', 'start')">Start</button>
+              <button class="btn-sm stop" onclick="ctrlService('api-gateway', 'stop')">Stop</button>
+              <button class="btn-sm restart" onclick="ctrlService('api-gateway', 'restart')">Restart</button>
+            </div>
+          </div>
+          <div class="ctrl-row">
+            <span class="ctrl-name">Booking Service</span>
+            <div class="ctrl-btns">
+              <button class="btn-sm start" onclick="ctrlService('booking-service', 'start')">Start</button>
+              <button class="btn-sm stop" onclick="ctrlService('booking-service', 'stop')">Stop</button>
+              <button class="btn-sm restart" onclick="ctrlService('booking-service', 'restart')">Restart</button>
+            </div>
+          </div>
+          <div class="ctrl-row">
+            <span class="ctrl-name">Inventory Service</span>
+            <div class="ctrl-btns">
+              <button class="btn-sm start" onclick="ctrlService('inventory-service', 'start')">Start</button>
+              <button class="btn-sm stop" onclick="ctrlService('inventory-service', 'stop')">Stop</button>
+              <button class="btn-sm restart" onclick="ctrlService('inventory-service', 'restart')">Restart</button>
+            </div>
+          </div>
+          <div class="ctrl-row">
+            <span class="ctrl-name">Payment Service</span>
+            <div class="ctrl-btns">
+              <button class="btn-sm start" onclick="ctrlService('payment-service', 'start')">Start</button>
+              <button class="btn-sm stop" onclick="ctrlService('payment-service', 'stop')">Stop</button>
+              <button class="btn-sm restart" onclick="ctrlService('payment-service', 'restart')">Restart</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="section-title">Load Testing</div>
+        <div class="mgmt-card">
+          <div class="lt-inputs">
+            <div class="lt-field">
+              <label>Concurrent Users</label>
+              <input type="number" id="lt-users" value="10">
+            </div>
+            <div class="lt-field">
+              <label>Spawn Rate (u/s)</label>
+              <input type="number" id="lt-rate" value="2">
+            </div>
+          </div>
+          <div class="test-controls mt-3">
+            <button class="btn btn-primary" id="startLtBtn" onclick="startLoadTest()">Start Load Test</button>
+            <button class="btn btn-secondary" id="stopLtBtn" onclick="stopLoadTest()">Stop</button>
+            <button class="btn btn-outline-info ml-2" onclick="downloadReport()" title="Download CSV Report">📄
+              Results</button>
+          </div>
+          <div id="lt-status" style="margin-top: 10px; font-size: 12px; color: var(--muted);">Status: Idle</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PERFORMANCE GRAPH -->
+    <div class="section-title">Performance Monitor</div>
+    <div class="booking-panel" style="margin-bottom: 28px;">
+      <canvas id="perfChart" style="max-height: 250px;"></canvas>
+    </div>
+
+    <!-- CLOUD vs EDGE COMPARISON -->
+    <div class="section-title">☁️ Cloud vs ⚡ Edge — Turnaround Time Comparison</div>
+    <div class="booking-panel" style="margin-bottom: 28px;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+        <!-- Cloud snapshot -->
+        <div style="background: var(--surface2); border-radius: 10px; padding: 20px; border: 2px solid transparent;"
+          id="cloud-snap-card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+            <div>
+              <div style="font-size:15px; font-weight:700;">☁️ Cloud Mode</div>
+              <div style="font-size:11px; color:var(--muted);">200ms network delay</div>
+            </div>
+            <button onclick="snapResult('cloud')"
+              style="padding:6px 14px; border-radius:7px; border:1px solid var(--border); background:#3b82f6; color:#fff; font-size:12px; font-weight:600; cursor:pointer;">📸
+              Capture</button>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;">
+            <div style="text-align:center;">
+              <div style="font-size:22px; font-weight:700; color:#60a5fa;" id="cloud-tat">—</div>
+              <div style="font-size:10px; color:var(--muted);">Avg TAT (ms)</div>
+            </div>
+            <div style="text-align:center;">
+              <div style="font-size:22px; font-weight:700; color:#60a5fa;" id="cloud-rps">—</div>
+              <div style="font-size:10px; color:var(--muted);">Req/sec</div>
+            </div>
+            <div style="text-align:center;">
+              <div style="font-size:22px; font-weight:700; color:#f87171;" id="cloud-fail">—</div>
+              <div style="font-size:10px; color:var(--muted);">Failures</div>
+            </div>
+          </div>
+        </div>
+        <!-- Edge snapshot -->
+        <div style="background: var(--surface2); border-radius: 10px; padding: 20px; border: 2px solid transparent;"
+          id="edge-snap-card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+            <div>
+              <div style="font-size:15px; font-weight:700;">⚡ Edge Mode</div>
+              <div style="font-size:11px; color:var(--muted);">0ms network delay</div>
+            </div>
+            <button onclick="snapResult('edge')"
+              style="padding:6px 14px; border-radius:7px; border:1px solid var(--border); background:#10b981; color:#fff; font-size:12px; font-weight:600; cursor:pointer;">📸
+              Capture</button>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;">
+            <div style="text-align:center;">
+              <div style="font-size:22px; font-weight:700; color:#34d399;" id="edge-tat">—</div>
+              <div style="font-size:10px; color:var(--muted);">Avg TAT (ms)</div>
+            </div>
+            <div style="text-align:center;">
+              <div style="font-size:22px; font-weight:700; color:#34d399;" id="edge-rps">—</div>
+              <div style="font-size:10px; color:var(--muted);">Req/sec</div>
+            </div>
+            <div style="text-align:center;">
+              <div style="font-size:22px; font-weight:700; color:#f87171;" id="edge-fail">—</div>
+              <div style="font-size:10px; color:var(--muted);">Failures</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Bar chart comparison -->
+      <div id="tat-comparison-wrap" style="display:none;">
+        <div style="font-size:12px; font-weight:600; color:var(--muted); margin-bottom:10px; text-align:center;">
+          TURNAROUND TIME COMPARISON (ms) — lower is better</div>
+        <div style="display:flex; align-items:flex-end; gap:30px; height:120px; justify-content:center;">
+          <div style="display:flex; flex-direction:column; align-items:center; gap:6px;">
+            <div id="bar-cloud-label" style="font-size:13px; font-weight:700; color:#60a5fa;"></div>
+            <div id="bar-cloud"
+              style="width:80px; background:#3b82f6; border-radius:6px 6px 0 0; transition: height 0.6s ease;"></div>
+            <div style="font-size:11px; color:var(--muted);">☁️ Cloud</div>
+          </div>
+          <div style="display:flex; flex-direction:column; align-items:center; gap:6px;">
+            <div id="bar-edge-label" style="font-size:13px; font-weight:700; color:#34d399;"></div>
+            <div id="bar-edge"
+              style="width:80px; background:#10b981; border-radius:6px 6px 0 0; transition: height 0.6s ease;"></div>
+            <div style="font-size:11px; color:var(--muted);">⚡ Edge</div>
+          </div>
+        </div>
+        <div id="tat-verdict"
+          style="text-align:center; margin-top:14px; font-size:13px; font-weight:600; padding:10px; border-radius:8px;">
+        </div>
+      </div>
+    </div>
+
+    <div class="content-grid">
+      <!-- Left: Booking + stats -->
+      <div>
+        <div class="section-title">Booking Control</div>
+        <div class="booking-panel">
+          <div class="panel-title">✈️ Flight Booking</div>
+
+          <div class="seat-gauge-wrap">
+            <div class="seat-numbers">
+              <span class="seat-count" id="seatCount">—</span>
+              <span class="seat-total">/ 100 seats</span>
+            </div>
+            <div class="gauge-bar">
+              <div class="gauge-fill" id="gaugeFill" style="width:0%"></div>
+            </div>
+            <div class="gauge-labels"><span>0</span><span>Available Seats</span><span>100</span></div>
+          </div>
+
+          <button class="book-btn" id="bookBtn" onclick="bookFlight()">Book a Flight</button>
+
+          <div class="last-result" id="lastResult">
+            <div class="result-row">
+              <span class="result-label">Status</span>
+              <span class="result-value" id="resStatus">—</span>
+            </div>
+            <div class="result-row">
+              <span class="result-label">Latency</span>
+              <span class="result-value" id="resLatency">—</span>
+            </div>
+            <div class="result-row">
+              <span class="result-label">Time</span>
+              <span class="result-value" id="resTime">—</span>
+            </div>
+          </div>
+
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-value" id="totalBookings">0</div>
+              <div class="stat-label">Total Bookings</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="successRate">—</div>
+              <div class="stat-label">Success Rate</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="avgLatency">—</div>
+              <div class="stat-label">Avg Latency</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="seatsBooked">0</div>
+              <div class="stat-label">Seats Booked</div>
+            </div>
+          </div>
+
+          <div class="chart-section">
+            <div class="section-title" style="margin: 16px 0 10px">Latency History (ms)</div>
+            <canvas id="latencyChart" height="100"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Activity feed -->
+      <div>
+        <div class="section-title">Activity Log</div>
+        <div class="activity-panel">
+          <div class="activity-list" id="activityList">
+            <div class="empty-state">No activity yet. Book a flight to get started.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- INTEGRATED TERMINAL -->
+    <div class="terminal-container">
+      <div class="term-header">
+        <span class="term-title">Integrated Terminal Logs</span>
+        <div class="term-tabs" id="term-tabs">
+          <button class="term-tab active" onclick="switchTerm('load-test')">Load Test</button>
+          <button class="term-tab" onclick="switchTerm('api-gateway')">Gateway</button>
+          <button class="term-tab" onclick="switchTerm('booking-service')">Booking</button>
+          <button class="term-tab" onclick="switchTerm('inventory-service')">Inventory</button>
+          <button class="term-tab" onclick="switchTerm('payment-service')">Payment</button>
+        </div>
+      </div>
+      <div class="term-body" id="term-body">Select a service to view logs...</div>
+    </div>
+  </main>
+
+  <script>
+    // ── State ──────────────────────────────────────
+    let perfChart = null;
+    let perfPolling = null;
+
+    function initPerfChart() {
+      const ctx = document.getElementById('perfChart').getContext('2d');
+      perfChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: [],
+          datasets: [
+            {
+              label: 'RPS (Requests/sec)',
+              borderColor: '#3b82f6',
+              backgroundColor: 'rgba(59, 130, 246, 0.1)',
+              data: [],
+              borderWidth: 2,
+              tension: 0.4,
+              yAxisID: 'y'
+            },
+            {
+              label: 'Avg Latency (ms)',
+              borderColor: '#6366f1',
+              backgroundColor: 'rgba(99, 102, 241, 0.1)',
+              data: [],
+              borderWidth: 2,
+              tension: 0.4,
+              yAxisID: 'y1'
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: { grid: { display: false }, ticks: { color: '#64748b' } },
+            y: {
+              type: 'linear', display: true, position: 'left',
+              title: { display: true, text: 'RPS', color: '#3b82f6' },
+              grid: { color: 'rgba(255, 255, 255, 0.05)' },
+              ticks: { color: '#64748b' }
+            },
+            y1: {
+              type: 'linear', display: true, position: 'right',
+              title: { display: true, text: 'Latency (ms)', color: '#6366f1' },
+              grid: { drawOnChartArea: false },
+              ticks: { color: '#64748b' }
+            }
+          },
+          plugins: {
+            legend: { labels: { color: '#e2e8f0', usePointStyle: true, boxWidth: 6 } }
+          }
+        }
+      });
+    }
+
+    async function pollPerfStats() {
+      if (!perfChart || !perfChart.data) return;
+      try {
+        const res = await fetch(`${MGMT_URL}/loadtest/stats`);
+        const stats = await res.json();
+
+        if (stats.error || typeof stats.rps === 'undefined') {
+          console.warn("Locust stats not ready yet...");
+          return;
+        }
+
+        const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+        perfChart.data.labels.push(timestamp);
+        perfChart.data.datasets[0].data.push(stats.rps || 0);
+        perfChart.data.datasets[1].data.push(stats.latency || 0);
+
+        if (perfChart.data.labels.length > 30) {
+          perfChart.data.labels.shift();
+          perfChart.data.datasets[0].data.shift();
+          perfChart.data.datasets[1].data.shift();
+        }
+
+        perfChart.update('none');
+      } catch (e) {
+        console.error("Stats polling error:", e);
+      }
+    }
+
+    const state = {
+      totalBookings: 0,
+      successCount: 0,
+      seatsBooked: 0,
+      latencies: [],
+    };
+
+    // ── Latency mini chart ──────────────────────────
+    const canvas = document.getElementById('latencyChart');
+    const ctx = canvas.getContext('2d');
+
+    function drawChart() {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.scale(dpr, dpr);
+
+      const w = rect.width, h = rect.height;
+      ctx.clearRect(0, 0, w, h);
+
+      const data = state.latencies.slice(-20);
+      if (data.length < 2) {
+        ctx.fillStyle = '#64748b';
+        ctx.font = '12px Inter';
+        ctx.textAlign = 'center';
+        ctx.fillText('Book flights to see latency trend', w / 2, h / 2);
+        return;
+      }
+
+      const max = Math.max(...data) * 1.2 || 1;
+      const minV = 0;
+
+      // grid lines
+      ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+      ctx.lineWidth = 1;
+      [0.25, 0.5, 0.75].forEach(f => {
+        const y = h - f * h;
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+      });
+
+      // gradient fill
+      const grad = ctx.createLinearGradient(0, 0, 0, h);
+      grad.addColorStop(0, 'rgba(99,102,241,0.35)');
+      grad.addColorStop(1, 'rgba(99,102,241,0)');
+
+      const pts = data.map((v, i) => ({
+        x: (i / (data.length - 1)) * w,
+        y: h - ((v - minV) / (max - minV)) * h,
+      }));
+
+      ctx.beginPath();
+      ctx.moveTo(pts[0].x, h);
+      ctx.lineTo(pts[0].x, pts[0].y);
+      pts.forEach((p, i) => { if (i > 0) ctx.lineTo(p.x, p.y); });
+      ctx.lineTo(pts[pts.length - 1].x, h);
+      ctx.closePath();
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      // line
+      ctx.beginPath();
+      ctx.strokeStyle = '#6366f1';
+      ctx.lineWidth = 2;
+      ctx.lineJoin = 'round';
+      pts.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
+      ctx.stroke();
+
+      // dots
+      pts.forEach(p => {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+        ctx.fillStyle = '#6366f1'; ctx.fill();
+      });
+    }
+
+    // ── Activity feed ──────────────────────────────
+    function addActivity(type, msg) {
+      const list = document.getElementById('activityList');
+      const empty = list.querySelector('.empty-state');
+      if (empty) empty.remove();
+
+      const now = new Date().toLocaleTimeString();
+      const item = document.createElement('div');
+      item.className = 'activity-item';
+      item.innerHTML = `
+      <div class="activity-dot ${type}"></div>
+      <div>
+        <div class="activity-msg">${msg}</div>
+        <div class="activity-time">${now}</div>
+      </div>`;
+      list.prepend(item);
+
+      // keep max 50
+      while (list.children.length > 50) list.removeChild(list.lastChild);
+    }
+
+    // ── Service health check ───────────────────────
+    async function checkService(id, url, method = 'GET') {
+      const card = document.getElementById(`card-${id}`);
+      const status = document.getElementById(`status-${id}`);
+      const latEl = document.getElementById(`latency-${id}`);
+
+      const t0 = Date.now();
+      try {
+        const res = await fetch(url, { method, signal: AbortSignal.timeout(5000) });
+        const ms = Date.now() - t0;
+        if (res.ok || res.status < 500) {
+          card.className = 'service-card online';
+          status.className = 'svc-status online';
+          status.textContent = 'Online';
+        } else throw new Error();
+        latEl.textContent = ms + ' ms';
+      } catch {
+        card.className = 'service-card offline';
+        status.className = 'svc-status offline';
+        status.textContent = 'Offline';
+        latEl.textContent = '—';
+      }
+    }
+
+    function checkAllServices() {
+      // Run checks in parallel but don't 'await' the whole group
+      // so the UI updates as each one returns.
+      checkService('gateway', 'http://localhost:8001/docs', 'GET');
+      checkService('booking', 'http://localhost:8002/docs', 'GET');
+      checkService('inventory', 'http://localhost:8003/check', 'GET');
+      checkService('payment', 'http://localhost:8004/docs', 'GET');
+    }
+
+    // ── Seat inventory ─────────────────────────────
+    async function refreshSeats() {
+      try {
+        const res = await fetch('http://localhost:8003/check');
+        const data = await res.json();
+        const seats = data.seats ?? 0;
+        document.getElementById('seatCount').textContent = seats;
+        document.getElementById('gaugeFill').style.width = (seats / 100 * 100) + '%';
+      } catch {
+        document.getElementById('seatCount').textContent = '?';
+      }
+    }
+
+    // ── Book flight ────────────────────────────────
+    async function bookFlight() {
+      const btn = document.getElementById('bookBtn');
+      btn.disabled = true;
+      btn.textContent = 'Booking…';
+
+      try {
+        const t0 = Date.now();
+        const res = await fetch('http://localhost:8001/book', { method: 'POST' });
+        const rtt = Date.now() - t0;
+        const data = await res.json();
+
+        state.totalBookings++;
+        const success = data.status === 'success';
+        if (success) { state.successCount++; state.seatsBooked++; }
+
+        const latMs = Math.round((data.latency ?? rtt / 1000) * 1000);
+        state.latencies.push(latMs);
+
+        // update result card
+        const resultEl = document.getElementById('lastResult');
+        resultEl.classList.add('show');
+        const statusEl = document.getElementById('resStatus');
+
+        // Robust status display
+        const statusText = data.status || (data.detail ? 'Error' : 'Unknown');
+        const detailText = data.detail || '';
+
+        statusEl.textContent = success ? '✅ Success' : '⚠️ ' + statusText;
+        statusEl.className = 'result-value ' + (success ? 'success' : 'error');
+
+        document.getElementById('resLatency').textContent = latMs + ' ms';
+        document.getElementById('resTime').textContent = new Date().toLocaleTimeString();
+
+        // stats
+        document.getElementById('totalBookings').textContent = state.totalBookings;
+        document.getElementById('seatsBooked').textContent = state.seatsBooked;
+        const rate = Math.round(state.successCount / state.totalBookings * 100);
+        document.getElementById('successRate').textContent = rate + '%';
+        const avg = Math.round(state.latencies.reduce((a, b) => a + b, 0) / state.latencies.length);
+        document.getElementById('avgLatency').textContent = avg + ' ms';
+
+        // activity
+        addActivity(success ? 'success' : 'error',
+          success
+            ? `Flight booked — ${latMs}ms end-to-end latency`
+            : `Booking failed: ${statusText}${detailText ? ' (' + detailText + ')' : ''}`
+        );
+        drawChart();
+        await refreshSeats();
+      } catch (e) {
+        addActivity('error', 'Could not reach API Gateway (is it running?)');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Book a Flight';
+      }
+    }
+
+    // ── Full refresh ───────────────────────────────
+    async function refreshAll() {
+      addActivity('info', 'Manual refresh triggered');
+      await Promise.all([checkAllServices(), refreshSeats()]);
+    }
+
+    // ── Integrated Management ───────────────────────
+    const MGMT_URL = 'http://localhost:8005';
+    let logWs = null;
+    let currentLogService = 'load-test';
+
+    async function ctrlService(name, action) {
+      addActivity('info', `Sending ${action} command to ${name}...`);
+      try {
+        const res = await fetch(`${MGMT_URL}/services/${name}/${action}`, { method: 'POST' });
+        const data = await res.json();
+        if (data.status === 'success') {
+          addActivity('success', data.message);
+          setTimeout(checkAllServices, 2000);
+        } else {
+          addActivity('error', `Failed: ${data.message}`);
+        }
+      } catch (e) {
+        addActivity('error', `Management API unreachable: ${e.message}`);
+      }
+    }
+
+    async function startLoadTest() {
+      const users = document.getElementById('lt-users').value;
+      const rate = document.getElementById('lt-rate').value;
+      const btn = document.getElementById('startLtBtn');
+
+      btn.disabled = true;
+      btn.textContent = 'Starting…';
+
+      try {
+        const res = await fetch(`${MGMT_URL}/loadtest/start?users=${users}&spawn_rate=${rate}`, { method: 'POST' });
+        const data = await res.json();
+        if (data.status === 'success') {
+          addActivity('success', 'Load testing started');
+          document.getElementById('lt-status').textContent = 'Status: Running (Locust)';
+          document.getElementById('lt-status').style.color = 'var(--green)';
+          switchTerm('load-test');
+
+          // Start performance polling
+          if (perfPolling) clearInterval(perfPolling);
+          perfPolling = setInterval(pollPerfStats, 1000);
+        } else {
+          addActivity('error', data.message);
+        }
+      } catch (e) {
+        addActivity('error', `Failed to start load test: ${e.message}`);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Start Load Test';
+      }
+    }
+
+    async function stopLoadTest() {
+      try {
+        const res = await fetch(`${MGMT_URL}/loadtest/stop`, { method: 'POST' });
+        const data = await res.json();
+        if (data.status === 'success') {
+          addActivity('info', 'Load testing stopped');
+          document.getElementById('lt-status').textContent = 'Status: Stopped';
+          document.getElementById('lt-status').style.color = 'var(--muted)';
+
+          // Stop performance polling
+          if (perfPolling) {
+            clearInterval(perfPolling);
+            perfPolling = null;
+          }
+        }
+      } catch (e) {
+        addActivity('error', `Failed to stop load test: ${e.message}`);
+      }
+    }
+
+    function downloadReport() {
+      window.open(`${MGMT_URL}/loadtest/results`, '_blank');
+    }
+
+    function switchTerm(service) {
+      currentLogService = service;
+
+      // UI Update
+      const tabs = document.querySelectorAll('.term-tab');
+      tabs.forEach(t => {
+        t.classList.toggle('active', t.textContent.toLowerCase().includes(service.split('-')[0]));
+      });
+
+      const body = document.getElementById('term-body');
+      body.innerHTML = `<div class="term-line info">Connecting to ${service} log stream...</div>`;
+
+      if (logWs) logWs.close();
+
+      const wsUrl = MGMT_URL.replace('http', 'ws') + `/ws/logs/${service}`;
+      logWs = new WebSocket(wsUrl);
+
+      logWs.onmessage = (event) => {
+        const line = document.createElement('div');
+        line.className = 'term-line';
+        line.textContent = event.data;
+        body.appendChild(line);
+        body.scrollTop = body.scrollHeight;
+
+        // limit lines
+        while (body.children.length > 200) body.removeChild(body.firstChild);
+      };
+
+      logWs.onerror = () => {
+        const line = document.createElement('div');
+        line.className = 'term-line error';
+        line.textContent = `Error connecting to ${service} log stream.`;
+        body.appendChild(line);
+      };
+
+      logWs.onclose = () => {
+        const line = document.createElement('div');
+        line.className = 'term-line';
+        line.textContent = `Log stream for ${service} closed.`;
+        body.appendChild(line);
+      };
+    }
+
+    // ── Simulation Toggle ────────────────────────
+    async function getSimulationMode() {
+      try {
+        const res = await fetch('http://localhost:8001/config');
+        const data = await res.json();
+        updateSimulationUI(data.cloud_mode);
+      } catch (e) {
+        console.error('Failed to get simulation mode', e);
+      }
+    }
+
+    async function setSimulationMode(isCloud) {
+      try {
+        const res = await fetch('http://localhost:8001/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cloud_mode: isCloud })
+        });
+        const data = await res.json();
+        updateSimulationUI(data.cloud_mode);
+        addActivity('info', `Switched to ${isCloud ? 'Cloud' : 'Edge'} Architecture Simulation`);
+      } catch (e) {
+        console.error('Failed to set simulation mode', e);
+      }
+    }
+
+    function updateSimulationUI(isCloud) {
+      const btnCloud = document.getElementById('btn-cloud-mode');
+      const btnEdge = document.getElementById('btn-edge-mode');
+
+      if (isCloud) {
+        btnCloud.style.background = 'var(--green)';
+        btnCloud.style.color = 'black';
+        btnEdge.style.background = 'var(--surface2)';
+        btnEdge.style.color = 'var(--text)';
+      } else {
+        btnEdge.style.background = 'var(--green)';
+        btnEdge.style.color = 'black';
+        btnCloud.style.background = 'var(--surface2)';
+        btnCloud.style.color = 'var(--text)';
+      }
+    }
+
+    // ── Cloud vs Edge Snapshot ──────────────────────
+    const snapData = { cloud: null, edge: null };
+
+    async function snapResult(mode) {
+      // Read current live stats from management service
+      let tat = 0, rps = 0, failures = 0;
+      try {
+        const res = await fetch(MGMT_URL + '/loadtest/stats');
+        const d = await res.json();
+        tat = Math.round(d.latency || 0);
+        rps = parseFloat(d.rps || 0).toFixed(1);
+        failures = Math.round(d.failures || 0);
+      } catch {
+        // Fallback to state averages
+        if (state.latencies.length > 0) {
+          tat = Math.round(state.latencies.reduce((a, b) => a + b, 0) / state.latencies.length);
+        }
+        rps = '—';
+        failures = state.totalBookings - state.successCount;
+      }
+
+      snapData[mode] = { tat, rps, failures };
+
+      document.getElementById(`${mode}-tat`).textContent = tat + ' ms';
+      document.getElementById(`${mode}-rps`).textContent = rps;
+      document.getElementById(`${mode}-fail`).textContent = failures;
+
+      // Highlight the captured card
+      const card = document.getElementById(`${mode}-snap-card`);
+      card.style.border = `2px solid ${mode === 'cloud' ? '#3b82f6' : '#10b981'}`;
+
+      addActivity('info', `📸 ${mode === 'cloud' ? '☁️ Cloud' : '⚡ Edge'} snapshot captured — TAT: ${tat}ms`);
+
+      if (snapData.cloud && snapData.edge) {
+        renderComparison();
+      }
+    }
+
+    function renderComparison() {
+      const cloud = snapData.cloud.tat;
+      const edge = snapData.edge.tat;
+      const max = Math.max(cloud, edge, 1);
+      const maxH = 100; // px
+
+      const barCloud = document.getElementById('bar-cloud');
+      const barEdge = document.getElementById('bar-edge');
+      const labelCloud = document.getElementById('bar-cloud-label');
+      const labelEdge = document.getElementById('bar-edge-label');
+      const verdict = document.getElementById('tat-verdict');
+      const wrap = document.getElementById('tat-comparison-wrap');
+
+      barCloud.style.height = Math.round((cloud / max) * maxH) + 'px';
+      barEdge.style.height = Math.round((edge / max) * maxH) + 'px';
+      labelCloud.textContent = cloud + ' ms';
+      labelEdge.textContent = edge + ' ms';
+      wrap.style.display = 'block';
+
+      const diff = cloud - edge;
+      const pct = cloud > 0 ? Math.round((diff / cloud) * 100) : 0;
+      if (diff > 0) {
+        verdict.textContent = `🏆 Edge is ${pct}% faster! (${diff}ms less turnaround time)`;
+        verdict.style.background = 'rgba(16,185,129,0.15)';
+        verdict.style.color = '#34d399';
+      } else if (diff < 0) {
+        verdict.textContent = `☁️ Cloud is ${Math.abs(pct)}% faster! (${Math.abs(diff)}ms less turnaround time)`;
+        verdict.style.background = 'rgba(59,130,246,0.15)';
+        verdict.style.color = '#60a5fa';
+      } else {
+        verdict.textContent = `🤝 Cloud and Edge have identical turnaround times!`;
+        verdict.style.background = 'rgba(255,255,255,0.05)';
+        verdict.style.color = 'var(--muted)';
+      }
+    }
+
+    // ── Init ───────────────────────────────────────
+    window.addEventListener('resize', drawChart);
+    refreshAll();
+    drawChart();
+    getSimulationMode();
+
+    // Set default terminal
+    setTimeout(() => {
+      switchTerm('load-test');
+    }, 1000);
+    initPerfChart();
+
+    // Auto-refresh health every 5 s (more responsive)
+    setInterval(checkAllServices, 5000);
+    // Auto-refresh seats every 3 s
+    setInterval(refreshSeats, 3000);
+  </script>
+</body>
+
+</html>

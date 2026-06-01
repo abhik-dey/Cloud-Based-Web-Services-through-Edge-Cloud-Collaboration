@@ -1,0 +1,45 @@
+services:
+
+  inventory-service:
+    build: ./services/inventory-service
+    container_name: inventory-service
+    ports:
+      - "8003:8000"
+    restart: unless-stopped
+
+  payment-service:
+    build: ./services/payment-service
+    container_name: payment-service
+    ports:
+      - "8004:8000"
+    restart: unless-stopped
+
+  booking-service:
+    build: ./services/booking-service
+    container_name: booking-service
+    ports:
+      - "8002:8000"
+    depends_on:
+      - inventory-service
+      - payment-service
+    restart: unless-stopped
+
+  api-gateway:
+    build: ./services/api-gateway
+    container_name: api-gateway
+    ports:
+      - "8001:8000"
+    depends_on:
+      - booking-service
+    restart: unless-stopped
+
+  management-service:
+    build: ./services/management-service
+    container_name: management-service
+    ports:
+      - "8005:8000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - .:/app
+    working_dir: /app/services/management-service
+    restart: unless-stopped
